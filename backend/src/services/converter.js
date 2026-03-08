@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 
 const DOWNLOADS_DIR = "/app/downloads";
-const COOKIES_FILE = "/app/cookies.txt";
+const COOKIES_FILE = "/app/downloads/cookies.txt";
 
 function getCookiesArgs() {
   if (fs.existsSync(COOKIES_FILE)) {

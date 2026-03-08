@@ -34,6 +34,7 @@ app.use((_req, res, next) => {
 });
 
 app.use(express.json({ limit: "1mb" }));
+app.use(express.text({ limit: "1mb", type: "text/plain" }));
 app.use("/downloads", express.static("/app/downloads"));
 
 // Global rate limit
@@ -42,7 +43,24 @@ app.use("/api", apiLimiter);
 app.use("/api", convertRoutes);
 
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok" });
+  const fs = require("fs");
+  const cookiesExist = fs.existsSync("/app/downloads/cookies.txt");
+  res.json({ status: "ok", cookies: cookiesExist });
+});
+
+// Upload cookies (protected by admin secret)
+app.post("/api/admin/cookies", (req, res) => {
+  const secret = req.headers["x-admin-secret"];
+  if (!secret || secret !== process.env.ADMIN_SECRET) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+  const fs = require("fs");
+  try {
+    fs.writeFileSync("/app/downloads/cookies.txt", req.body);
+    res.json({ ok: true, size: req.body.length });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to write cookies" });
+  }
 });
 
 async function main() {
