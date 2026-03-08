@@ -25,11 +25,6 @@ export default function Header() {
           </div>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2.5">
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg" style={{ background: "var(--bg-tertiary)" }}>
-            <img src="/flag-ec.png" alt="Ecuador" title="Ecuador" className="w-6 h-4 rounded-sm object-cover" />
-            <img src="/flag-es.png" alt="Espa&#241;a" title="Espa&#241;a" className="w-6 h-4 rounded-sm object-cover" />
-            <img src="/flag-eu.svg" alt="Euskal Herria" title="Euskal Herria" className="w-6 h-4 rounded-sm object-cover" />
-          </div>
           <LangSwitcher />
           <ThemeToggle />
         </div>
