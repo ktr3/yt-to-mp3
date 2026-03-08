@@ -53,55 +53,57 @@ export default function History() {
   if (items.length === 0) {
     return (
       <div className="text-center text-gray-500 py-8">
-        <p className="text-lg">No conversions yet</p>
-        <p className="text-sm mt-1">Your conversion history will appear here</p>
+        <p className="text-base sm:text-lg">No conversions yet</p>
+        <p className="text-xs sm:text-sm mt-1">Your conversion history will appear here</p>
       </div>
     );
   }
 
   return (
     <div>
-      <h2 className="text-lg font-semibold mb-4 text-gray-200">
+      <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-200">
         Recent Conversions
       </h2>
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex items-center gap-4 p-4 bg-white/5 border border-white/5 rounded-xl"
+            className="flex items-center gap-2 sm:gap-4 p-3 sm:p-4 bg-white/5 border border-white/5 rounded-xl"
           >
             {item.video_thumbnail && (
               <img
                 src={item.video_thumbnail}
                 alt=""
-                className="w-20 h-12 object-cover rounded-lg flex-shrink-0"
+                className="w-14 h-9 sm:w-20 sm:h-12 object-cover rounded-lg flex-shrink-0"
               />
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
+              <p className="text-xs sm:text-sm font-medium text-white truncate">
                 {item.video_title || "Untitled"}
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5">
                 {item.format?.toUpperCase()} &bull; {item.quality} kbps &bull;{" "}
-                {formatDuration(item.video_duration)} &bull;{" "}
+                <span className="hidden sm:inline">{formatDuration(item.video_duration)} &bull; </span>
                 {timeAgo(item.created_at)}
               </p>
             </div>
-            <span
-              className={`px-2 py-1 rounded-md text-xs font-medium ${
-                STATUS_STYLES[item.status] || ""
-              }`}
-            >
-              {item.status}
-            </span>
-            {item.status === "completed" && (
-              <a
-                href={`${API}/download/${item.id}`}
-                className="px-3 py-1.5 bg-green-600 hover:bg-green-700 rounded-lg text-xs font-medium transition-colors"
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              <span
+                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-medium ${
+                  STATUS_STYLES[item.status] || ""
+                }`}
               >
-                Download
-              </a>
-            )}
+                {item.status}
+              </span>
+              {item.status === "completed" && (
+                <a
+                  href={`${API}/download/${item.id}`}
+                  className="px-2 sm:px-3 py-1 sm:py-1.5 bg-green-600 hover:bg-green-700 rounded-lg text-[10px] sm:text-xs font-medium transition-colors"
+                >
+                  Download
+                </a>
+              )}
+            </div>
           </div>
         ))}
       </div>

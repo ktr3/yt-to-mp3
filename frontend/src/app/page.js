@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <Header />
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <Converter onConversionComplete={() => setRefreshHistory((n) => n + 1)} />
         <History key={refreshHistory} />
       </div>

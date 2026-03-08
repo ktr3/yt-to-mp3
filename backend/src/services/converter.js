@@ -45,9 +45,26 @@ function getPlaylistInfo(url, maxItems = 50) {
         }
         try {
           const lines = stdout.trim().split("\n").filter(Boolean);
-          const videos = lines.map((line) => {
+          const unavailable = [];
+          const videos = [];
+
+          for (const line of lines) {
             const info = JSON.parse(line);
-            return {
+            const title = info.title || "";
+
+            // Filter out deleted, private, and unavailable videos
+            if (
+              title === "[Deleted video]" ||
+              title === "[Private video]" ||
+              title === "[Unavailable]" ||
+              info.availability === "unavailable" ||
+              info.availability === "private"
+            ) {
+              unavailable.push(title || `Video ${info.id}`);
+              continue;
+            }
+
+            videos.push({
               id: info.id,
               title: info.title,
               url: info.url || info.webpage_url || `https://www.youtube.com/watch?v=${info.id}`,
@@ -55,9 +72,10 @@ function getPlaylistInfo(url, maxItems = 50) {
               thumbnail: info.thumbnails?.length
                 ? info.thumbnails[info.thumbnails.length - 1].url
                 : null,
-            };
-          });
-          resolve(videos);
+            });
+          }
+
+          resolve({ videos, unavailable });
         } catch (parseErr) {
           console.error("Playlist parse error:", parseErr.message);
           reject(new Error("Failed to parse playlist info"));

@@ -67,15 +67,16 @@ router.post("/playlist-info", async (req, res) => {
 
     // Try to extract playlist URL
     const playlistUrl = getPlaylistUrl(url) || url;
-    const videos = await getPlaylistInfo(playlistUrl);
+    const result = await getPlaylistInfo(playlistUrl);
 
-    if (!videos || videos.length === 0) {
-      return res.status(400).json({ error: "No videos found in playlist" });
+    if (!result.videos || result.videos.length === 0) {
+      return res.status(400).json({ error: "No available videos found in playlist" });
     }
 
     res.json({
-      count: videos.length,
-      videos,
+      count: result.videos.length,
+      videos: result.videos,
+      unavailable: result.unavailable || [],
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
