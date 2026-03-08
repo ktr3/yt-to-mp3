@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useLang } from "./LangContext";
-import { LANGUAGES, BASQUE_FLAG_SVG } from "../i18n";
+import { LANGUAGES } from "../i18n";
 
 export default function LangSwitcher() {
   const { lang, setLang } = useLang();
@@ -19,13 +19,6 @@ export default function LangSwitcher() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const renderFlag = (l) =>
-    l.code === "eu" ? (
-      <img src={BASQUE_FLAG_SVG} alt="Euskadi" className="w-5 h-3.5 rounded-sm" />
-    ) : (
-      <span className="text-base leading-none">{l.flag}</span>
-    );
-
   return (
     <div ref={ref} className="relative">
       <button
@@ -36,8 +29,10 @@ export default function LangSwitcher() {
           color: "var(--text-primary)",
         }}
       >
-        {renderFlag(current)}
-        <span>{current.label}</span>
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: "var(--text-secondary)" }}>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+        </svg>
+        <span>{current.fullName}</span>
         <svg className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
@@ -61,7 +56,6 @@ export default function LangSwitcher() {
                 color: lang === l.code ? "var(--accent)" : "var(--text-primary)",
               }}
             >
-              {renderFlag(l)}
               <span>{l.fullName}</span>
             </button>
           ))}
