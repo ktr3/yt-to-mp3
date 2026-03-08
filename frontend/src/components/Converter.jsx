@@ -5,7 +5,7 @@ import Turnstile from "./Turnstile";
 import { useLang } from "./LangContext";
 import { t } from "../i18n";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { API } from "../config";
 
 const FORMATS = [
   { value: "mp3", label: "MP3" },

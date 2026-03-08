@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useLang } from "./LangContext";
 import { t } from "../i18n";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { API } from "../config";
 
 function formatDuration(seconds) {
   if (!seconds) return "--";
