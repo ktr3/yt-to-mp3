@@ -12,7 +12,7 @@ export default function Turnstile({ onToken }) {
       if (widgetIdRef.current !== null) return;
 
       widgetIdRef.current = window.turnstile.render(containerRef.current, {
-        sitekey: "0x4AAAAAACn_W4nJmcFV9EqO",
+        sitekey: "0x4AAAAAACoBBFSNubbwkqqe",
         theme: "dark",
         callback: (token) => onToken(token),
         "expired-callback": () => onToken(""),
