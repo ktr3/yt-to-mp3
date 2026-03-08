@@ -7,15 +7,13 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: clip2audio
-      POSTGRES_USER: ${DB_USER:-clip2audio}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-clip2audio_secret}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-clip2audio}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -24,12 +22,11 @@ services:
     image: redis:7-alpine
     container_name: clip2audio-redis
     restart: unless-stopped
-    ports:
-      - "6379:6379"
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     volumes:
       - redisdata:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -43,11 +40,11 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      DATABASE_URL: postgres://${DB_USER:-clip2audio}:${DB_PASSWORD:-clip2audio_secret}@postgres:5432/clip2audio
-      REDIS_URL: redis://redis:6379
-      CORS_ORIGIN: http://localhost:3000
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@postgres:5432/clip2audio
+      REDIS_URL: redis://default:${REDIS_PASSWORD}@redis:6379
+      CORS_ORIGIN: ${CORS_ORIGIN}
       MAX_DURATION_FREE: 7200
-      TURNSTILE_SECRET: ${TURNSTILE_SECRET:-0x4AAAAAACn_WyhK90P-PM3dCZU5Jhl66yw}
+      TURNSTILE_SECRET: ${TURNSTILE_SECRET}
     volumes:
       - downloads:/app/downloads
     ports:
@@ -65,7 +62,7 @@ services:
     container_name: clip2audio-frontend
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3001/api
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     ports:
       - "3000:3000"
     depends_on:

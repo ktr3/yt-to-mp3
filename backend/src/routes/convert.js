@@ -2,12 +2,22 @@ const { Router } = require("express");
 const { query } = require("../db");
 const { getVideoInfo, getPlaylistInfo } = require("../services/converter");
 const { convertQueue } = require("../queues/convertQueue");
-const { convertLimiter } = require("../middleware/rateLimit");
+const { convertLimiter, infoLimiter } = require("../middleware/rateLimit");
 const { verifyTurnstile } = require("../middleware/turnstile");
 const path = require("path");
 const fs = require("fs");
 
 const router = Router();
+
+// Sanitize error messages for client responses
+function safeError(err) {
+  const msg = err.message || "Internal server error";
+  // Don't expose file paths or system details
+  if (msg.includes("/") || msg.includes("\\") || msg.includes("ENOENT") || msg.includes("EACCES")) {
+    return "An internal error occurred. Please try again.";
+  }
+  return msg;
+}
 
 const YOUTUBE_URL_REGEX = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
 const PLAYLIST_REGEX = /[?&]list=([\w-]+)/;
@@ -35,7 +45,7 @@ const VALID_QUALITIES = ["128", "192", "256", "320"];
 const MAX_DURATION = parseInt(process.env.MAX_DURATION_FREE, 10) || 1200;
 
 // Get single video info
-router.post("/info", async (req, res) => {
+router.post("/info", infoLimiter, async (req, res) => {
   try {
     const { url } = req.body;
     if (!url || !YOUTUBE_URL_REGEX.test(url)) {
@@ -53,12 +63,12 @@ router.post("/info", async (req, res) => {
 
     res.json(info);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: safeError(err) });
   }
 });
 
 // Get playlist info
-router.post("/playlist-info", async (req, res) => {
+router.post("/playlist-info", infoLimiter, async (req, res) => {
   try {
     const { url } = req.body;
     if (!url || !YOUTUBE_URL_REGEX.test(url)) {
@@ -79,7 +89,7 @@ router.post("/playlist-info", async (req, res) => {
       unavailable: result.unavailable || [],
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: safeError(err) });
   }
 });
 
@@ -131,7 +141,7 @@ router.post("/convert", verifyTurnstile, convertLimiter, async (req, res) => {
       duration: info.duration,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: safeError(err) });
   }
 });
 
@@ -186,7 +196,7 @@ router.post("/convert-playlist", verifyTurnstile, convertLimiter, async (req, re
       conversions,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: safeError(err) });
   }
 });
 
@@ -204,7 +214,7 @@ router.get("/status/:id", async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: safeError(err) });
   }
 });
 
@@ -225,7 +235,7 @@ router.post("/status-batch", async (req, res) => {
 
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: safeError(err) });
   }
 });
 
@@ -247,7 +257,13 @@ router.get("/download/:id", async (req, res) => {
       return res.status(400).json({ error: "Conversion not ready yet" });
     }
 
-    if (!fs.existsSync(conversion.file_path)) {
+    // Validate file path stays within downloads directory
+    const resolvedPath = path.resolve(conversion.file_path);
+    if (!resolvedPath.startsWith("/app/downloads")) {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    if (!fs.existsSync(resolvedPath)) {
       return res.status(404).json({ error: "File not found" });
     }
 
@@ -258,7 +274,7 @@ router.get("/download/:id", async (req, res) => {
 
     res.download(conversion.file_path, `${safeName}.${conversion.format}`);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: safeError(err) });
   }
 });
 
@@ -276,7 +292,7 @@ router.get("/history", async (req, res) => {
 
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: safeError(err) });
   }
 });
 

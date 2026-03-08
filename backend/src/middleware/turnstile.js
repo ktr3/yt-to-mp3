@@ -1,6 +1,14 @@
-const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET || "0x4AAAAAACn_WyhK90P-PM3dCZU5Jhl66yw";
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET;
+
+if (!TURNSTILE_SECRET) {
+  console.warn("WARNING: TURNSTILE_SECRET not set. Turnstile verification will reject all requests.");
+}
 
 async function verifyTurnstile(req, res, next) {
+  if (!TURNSTILE_SECRET) {
+    return res.status(503).json({ error: "Security service not configured." });
+  }
+
   const token = req.body.turnstileToken;
 
   if (!token) {
@@ -27,8 +35,7 @@ async function verifyTurnstile(req, res, next) {
     next();
   } catch (err) {
     console.error("Turnstile verification error:", err.message);
-    // Allow request on verification service failure to avoid blocking users
-    next();
+    return res.status(503).json({ error: "Security verification service unavailable. Please try again later." });
   }
 }
 
