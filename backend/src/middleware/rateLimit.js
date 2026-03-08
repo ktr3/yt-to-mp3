@@ -1,11 +1,11 @@
 const rateLimit = require("express-rate-limit");
 
 const convertLimiter = rateLimit({
-  windowMs: 24 * 60 * 60 * 1000, // 24 hours
-  max: parseInt(process.env.MAX_CONVERSIONS_FREE, 10) || 3,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
   keyGenerator: (req) => req.ip,
   message: {
-    error: "Daily conversion limit reached. Upgrade to Pro for more conversions.",
+    error: "Too many requests. Please wait a few minutes.",
   },
   standardHeaders: true,
   legacyHeaders: false,

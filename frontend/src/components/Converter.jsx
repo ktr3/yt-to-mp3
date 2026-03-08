@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import Turnstile from "./Turnstile";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -35,6 +36,9 @@ export default function Converter({ onConversionComplete }) {
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
   const pollingRef = useRef(null);
+
+  // Turnstile token
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   // Playlist state
   const [playlistVideos, setPlaylistVideos] = useState([]);
@@ -82,7 +86,7 @@ export default function Converter({ onConversionComplete }) {
       const res = await fetch(`${API}/convert`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, format, quality }),
+        body: JSON.stringify({ url, format, quality, turnstileToken }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -145,7 +149,7 @@ export default function Converter({ onConversionComplete }) {
       const res = await fetch(`${API}/convert-playlist`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, format, quality, videoUrls }),
+        body: JSON.stringify({ url, format, quality, videoUrls, turnstileToken }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -296,12 +300,16 @@ export default function Converter({ onConversionComplete }) {
           )}
 
           {status === "info" && (
-            <button
-              onClick={startConversion}
-              className="w-full py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 rounded-xl font-semibold text-lg transition-all transform hover:scale-[1.01]"
-            >
-              Download {format.toUpperCase()}
-            </button>
+            <>
+              <Turnstile onToken={setTurnstileToken} />
+              <button
+                onClick={startConversion}
+                disabled={!turnstileToken}
+                className="w-full py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 rounded-xl font-semibold text-lg transition-all transform hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Download {format.toUpperCase()}
+              </button>
+            </>
           )}
 
           {status === "converting" && <ConvertingSpinner />}
@@ -344,9 +352,11 @@ export default function Converter({ onConversionComplete }) {
                 disabled={false}
               />
 
+              <Turnstile onToken={setTurnstileToken} />
               <button
                 onClick={startPlaylistConversion}
-                className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl font-semibold text-lg transition-all transform hover:scale-[1.01]"
+                disabled={!turnstileToken}
+                className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl font-semibold text-lg transition-all transform hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Download All ({playlistVideos.length} videos) as {format.toUpperCase()}
               </button>

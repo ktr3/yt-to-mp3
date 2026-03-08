@@ -15,7 +15,7 @@ export default function Header() {
         </div>
         <nav className="flex items-center gap-4 text-sm text-gray-400">
           <span className="px-3 py-1 rounded-full bg-white/5 text-xs">
-            Free Plan - 3/day
+            Free &amp; Unlimited
           </span>
         </nav>
       </div>

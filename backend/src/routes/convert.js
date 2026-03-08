@@ -3,6 +3,7 @@ const { query } = require("../db");
 const { getVideoInfo, getPlaylistInfo } = require("../services/converter");
 const { convertQueue } = require("../queues/convertQueue");
 const { convertLimiter } = require("../middleware/rateLimit");
+const { verifyTurnstile } = require("../middleware/turnstile");
 const path = require("path");
 const fs = require("fs");
 
@@ -82,7 +83,7 @@ router.post("/playlist-info", async (req, res) => {
 });
 
 // Start single video conversion
-router.post("/convert", convertLimiter, async (req, res) => {
+router.post("/convert", verifyTurnstile, convertLimiter, async (req, res) => {
   try {
     const { url, format = "mp3", quality = "192" } = req.body;
 
@@ -134,7 +135,7 @@ router.post("/convert", convertLimiter, async (req, res) => {
 });
 
 // Start playlist batch conversion
-router.post("/convert-playlist", convertLimiter, async (req, res) => {
+router.post("/convert-playlist", verifyTurnstile, convertLimiter, async (req, res) => {
   try {
     const { url, format = "mp3", quality = "192", videoUrls } = req.body;
 

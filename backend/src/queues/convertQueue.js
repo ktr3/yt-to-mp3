@@ -54,7 +54,7 @@ function startWorker() {
     {
       connection,
       concurrency: 2,
-      limiter: { max: 5, duration: 60000 },
+      limiter: { max: 20, duration: 60000 },
     }
   );
 

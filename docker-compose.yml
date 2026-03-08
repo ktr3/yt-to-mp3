@@ -46,8 +46,8 @@ services:
       DATABASE_URL: postgres://${DB_USER:-clip2audio}:${DB_PASSWORD:-clip2audio_secret}@postgres:5432/clip2audio
       REDIS_URL: redis://redis:6379
       CORS_ORIGIN: http://localhost:3000
-      MAX_DURATION_FREE: 1200
-      MAX_CONVERSIONS_FREE: 3
+      MAX_DURATION_FREE: 7200
+      TURNSTILE_SECRET: ${TURNSTILE_SECRET:-0x4AAAAAACn_WyhK90P-PM3dCZU5Jhl66yw}
     volumes:
       - downloads:/app/downloads
     ports:
