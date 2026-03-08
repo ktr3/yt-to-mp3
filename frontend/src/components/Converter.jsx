@@ -196,16 +196,16 @@ export default function Converter({ onConversionComplete }) {
   const failedPlaylist = playlistConversions.filter((c) => c.status === "failed");
 
   return (
-    <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-4 sm:p-6 mb-6 sm:mb-8">
+    <div className="rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
       {/* Mode Tabs */}
       <div className="flex gap-2 mb-4 sm:mb-6">
         <button
           onClick={() => { setMode("single"); reset(); }}
-          className={`flex-1 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${
-            mode === "single"
-              ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
-              : "bg-white/5 text-gray-400 hover:bg-white/10"
-          }`}
+          className="flex-1 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 sm:gap-2"
+          style={{
+            background: mode === "single" ? "var(--accent)" : "var(--bg-tertiary)",
+            color: mode === "single" ? "#fff" : "var(--text-secondary)",
+          }}
         >
           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -215,11 +215,11 @@ export default function Converter({ onConversionComplete }) {
         </button>
         <button
           onClick={() => { setMode("playlist"); reset(); }}
-          className={`flex-1 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${
-            mode === "playlist"
-              ? "bg-green-600 text-white shadow-lg shadow-green-600/20"
-              : "bg-white/5 text-gray-400 hover:bg-white/10"
-          }`}
+          className="flex-1 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 sm:gap-2"
+          style={{
+            background: mode === "playlist" ? "var(--green)" : "var(--bg-tertiary)",
+            color: mode === "playlist" ? "#fff" : "var(--text-secondary)",
+          }}
         >
           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
@@ -230,7 +230,7 @@ export default function Converter({ onConversionComplete }) {
 
       {/* URL Input */}
       <form onSubmit={handleSubmit} className="mb-4 sm:mb-6">
-        <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-xs sm:text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
           {mode === "single" ? t(lang, "pasteVideoUrl") : t(lang, "pastePlaylistUrl")}
         </label>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -239,19 +239,18 @@ export default function Converter({ onConversionComplete }) {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://www.youtube.com/watch?v=..."
-            className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-sm sm:text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-all"
+            style={{
+              background: "var(--bg-tertiary)",
+              border: "1px solid var(--border)",
+              color: "var(--text-primary)",
+            }}
           />
           <button
             type="submit"
-            disabled={
-              status === "loading" || status === "converting" ||
-              playlistStatus === "loading" || playlistStatus === "converting"
-            }
-            className={`px-6 py-2.5 sm:py-3 rounded-xl font-medium text-sm sm:text-base transition-colors ${
-              mode === "single"
-                ? "bg-red-600 hover:bg-red-700 disabled:opacity-50"
-                : "bg-green-600 hover:bg-green-700 disabled:opacity-50"
-            } disabled:cursor-not-allowed`}
+            disabled={status === "loading" || status === "converting" || playlistStatus === "loading" || playlistStatus === "converting"}
+            className="px-6 py-2.5 sm:py-3 rounded-xl font-medium text-sm sm:text-base text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: mode === "single" ? "var(--accent)" : "var(--green)" }}
           >
             {(status === "loading" || playlistStatus === "loading") ? t(lang, "loading") : t(lang, "getInfo")}
           </button>
@@ -260,22 +259,22 @@ export default function Converter({ onConversionComplete }) {
 
       {/* Error */}
       {(status === "error" || playlistStatus === "error") && error && (
-        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-300 text-xs sm:text-sm">
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl text-xs sm:text-sm" style={{ background: "rgba(252,60,68,0.1)", border: "1px solid rgba(252,60,68,0.2)", color: "#fc3c44" }}>
           {error}
         </div>
       )}
 
-      {/* ────── SINGLE VIDEO MODE ────── */}
+      {/* SINGLE VIDEO MODE */}
       {mode === "single" && (
         <>
           {videoInfo && status !== "idle" && (
-            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4 bg-white/5 rounded-xl">
+            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
               {videoInfo.thumbnail && (
                 <img src={videoInfo.thumbnail} alt={videoInfo.title} className="w-full sm:w-40 h-auto sm:h-24 object-cover rounded-lg flex-shrink-0" />
               )}
               <div className="min-w-0">
-                <h3 className="font-semibold text-white text-sm sm:text-base line-clamp-2 sm:truncate">{videoInfo.title}</h3>
-                <p className="text-xs sm:text-sm text-gray-400 mt-1">
+                <h3 className="font-semibold text-sm sm:text-base line-clamp-2 sm:truncate" style={{ color: "var(--text-primary)" }}>{videoInfo.title}</h3>
+                <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
                   {videoInfo.uploader} &bull; {formatDuration(videoInfo.duration)}
                 </p>
               </div>
@@ -284,10 +283,8 @@ export default function Converter({ onConversionComplete }) {
 
           {(status === "info" || status === "converting" || status === "done") && (
             <FormatQualitySelector
-              lang={lang}
-              format={format} setFormat={setFormat}
-              quality={quality} setQuality={setQuality}
-              disabled={status !== "info"}
+              lang={lang} format={format} setFormat={setFormat}
+              quality={quality} setQuality={setQuality} disabled={status !== "info"}
             />
           )}
 
@@ -297,7 +294,8 @@ export default function Converter({ onConversionComplete }) {
               <button
                 onClick={startConversion}
                 disabled={!turnstileToken}
-                className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 rounded-xl font-semibold text-base sm:text-lg transition-all transform hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-2.5 sm:py-3 rounded-xl font-semibold text-base sm:text-lg text-white transition-all transform hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: "var(--accent)" }}
               >
                 {t(lang, "download")} {format.toUpperCase()}
               </button>
@@ -305,27 +303,26 @@ export default function Converter({ onConversionComplete }) {
           )}
 
           {status === "converting" && <ConvertingSpinner lang={lang} />}
-
           {status === "done" && conversion && (
             <DownloadButton lang={lang} id={conversion.id} format={format} fileSize={conversion.file_size} onReset={() => { reset(); setUrl(""); }} />
           )}
         </>
       )}
 
-      {/* ────── PLAYLIST MODE ────── */}
+      {/* PLAYLIST MODE */}
       {mode === "playlist" && (
         <>
           {playlistStatus === "info" && playlistVideos.length > 0 && (
             <>
-              <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-                <p className="text-green-300 font-semibold text-sm sm:text-base">
+              <div className="mb-3 sm:mb-4 p-3 sm:p-4 rounded-xl" style={{ background: "rgba(52,199,89,0.1)", border: "1px solid rgba(52,199,89,0.2)" }}>
+                <p className="font-semibold text-sm sm:text-base" style={{ color: "var(--green)" }}>
                   {playlistVideos.length} {t(lang, "videosFound")}
                 </p>
               </div>
 
               {playlistUnavailable.length > 0 && (
-                <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
-                  <p className="text-yellow-300 text-xs sm:text-sm font-medium">
+                <div className="mb-3 sm:mb-4 p-3 sm:p-4 rounded-xl" style={{ background: "rgba(255,204,0,0.1)", border: "1px solid rgba(255,204,0,0.2)", color: "#ffcc00" }}>
+                  <p className="text-xs sm:text-sm font-medium">
                     {playlistUnavailable.length} {t(lang, "videosSkipped")}
                   </p>
                 </div>
@@ -333,31 +330,30 @@ export default function Converter({ onConversionComplete }) {
 
               <div className="mb-4 sm:mb-6 max-h-52 sm:max-h-64 overflow-y-auto space-y-2 pr-1 sm:pr-2">
                 {playlistVideos.map((v, i) => (
-                  <div key={v.id || i} className="flex items-center gap-2 sm:gap-3 p-2 bg-white/5 rounded-lg">
-                    <span className="text-xs text-gray-500 w-5 sm:w-6 text-right flex-shrink-0">{i + 1}</span>
+                  <div key={v.id || i} className="flex items-center gap-2 sm:gap-3 p-2 rounded-lg" style={{ background: "var(--bg-tertiary)" }}>
+                    <span className="text-xs w-5 sm:w-6 text-right flex-shrink-0" style={{ color: "var(--text-tertiary)" }}>{i + 1}</span>
                     {v.thumbnail && (
                       <img src={v.thumbnail} alt="" className="w-12 h-8 sm:w-16 sm:h-10 object-cover rounded flex-shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm text-white truncate">{v.title || `Video ${v.id}`}</p>
-                      <p className="text-xs text-gray-500">{formatDuration(v.duration)}</p>
+                      <p className="text-xs sm:text-sm truncate" style={{ color: "var(--text-primary)" }}>{v.title || `Video ${v.id}`}</p>
+                      <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>{formatDuration(v.duration)}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
               <FormatQualitySelector
-                lang={lang}
-                format={format} setFormat={setFormat}
-                quality={quality} setQuality={setQuality}
-                disabled={false}
+                lang={lang} format={format} setFormat={setFormat}
+                quality={quality} setQuality={setQuality} disabled={false}
               />
 
               <Turnstile onToken={setTurnstileToken} />
               <button
                 onClick={startPlaylistConversion}
                 disabled={!turnstileToken}
-                className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl font-semibold text-sm sm:text-lg transition-all transform hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-2.5 sm:py-3 rounded-xl font-semibold text-sm sm:text-lg text-white transition-all transform hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: "var(--green)" }}
               >
                 {t(lang, "downloadAll")} {playlistVideos.length} {t(lang, "videosAs")} {format.toUpperCase()}
               </button>
@@ -366,7 +362,7 @@ export default function Converter({ onConversionComplete }) {
 
           {playlistStatus === "loading" && (
             <div className="text-center py-4">
-              <div className="inline-flex items-center gap-2 sm:gap-3 text-green-400">
+              <div className="inline-flex items-center gap-2 sm:gap-3" style={{ color: "var(--green)" }}>
                 <svg className="animate-spin h-5 w-5 sm:h-6 sm:w-6" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -378,7 +374,7 @@ export default function Converter({ onConversionComplete }) {
 
           {playlistStatus === "converting" && (
             <div className="text-center py-4">
-              <div className="inline-flex items-center gap-2 sm:gap-3 text-green-400 mb-4">
+              <div className="inline-flex items-center gap-2 sm:gap-3 mb-4" style={{ color: "var(--green)" }}>
                 <svg className="animate-spin h-5 w-5 sm:h-6 sm:w-6" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -387,10 +383,10 @@ export default function Converter({ onConversionComplete }) {
                   {t(lang, "convertingProgress")} {completedPlaylist.length}/{playlistConversions.length}
                 </span>
               </div>
-              <div className="w-full bg-white/10 rounded-full h-2">
+              <div className="w-full rounded-full h-2" style={{ background: "var(--bg-tertiary)" }}>
                 <div
-                  className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${(completedPlaylist.length / playlistConversions.length) * 100}%` }}
+                  className="h-2 rounded-full transition-all duration-500"
+                  style={{ background: "var(--green)", width: `${(completedPlaylist.length / playlistConversions.length) * 100}%` }}
                 />
               </div>
             </div>
@@ -398,27 +394,28 @@ export default function Converter({ onConversionComplete }) {
 
           {playlistStatus === "done" && (
             <div className="space-y-3">
-              <div className="p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-center">
-                <p className="text-green-300 font-semibold text-base sm:text-lg">
+              <div className="p-3 sm:p-4 rounded-xl text-center" style={{ background: "rgba(52,199,89,0.1)", border: "1px solid rgba(52,199,89,0.2)" }}>
+                <p className="font-semibold text-base sm:text-lg" style={{ color: "var(--green)" }}>
                   {completedPlaylist.length} {t(lang, "ofConverted")} {playlistConversions.length} {t(lang, "converted")}
                 </p>
                 {failedPlaylist.length > 0 && (
-                  <p className="text-red-400 text-xs sm:text-sm mt-1">{failedPlaylist.length} {t(lang, "failed")}</p>
+                  <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--accent)" }}>{failedPlaylist.length} {t(lang, "failed")}</p>
                 )}
               </div>
               <div className="max-h-52 sm:max-h-64 overflow-y-auto space-y-2 pr-1 sm:pr-2">
                 {playlistConversions.map((c) => (
-                  <div key={c.id} className="flex items-center justify-between gap-2 sm:gap-3 p-2 sm:p-3 bg-white/5 rounded-lg">
+                  <div key={c.id} className="flex items-center justify-between gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg" style={{ background: "var(--bg-tertiary)" }}>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm text-white truncate">{c.video_title || t(lang, "processing")}</p>
-                      <p className={`text-xs ${c.status === "completed" ? "text-green-400" : "text-red-400"}`}>
+                      <p className="text-xs sm:text-sm truncate" style={{ color: "var(--text-primary)" }}>{c.video_title || t(lang, "processing")}</p>
+                      <p className="text-xs" style={{ color: c.status === "completed" ? "var(--green)" : "var(--accent)" }}>
                         {c.status}
                       </p>
                     </div>
                     {c.status === "completed" && (
                       <a
                         href={`${API}/download/${c.id}`}
-                        className="px-3 sm:px-4 py-1.5 bg-green-600 hover:bg-green-700 rounded-lg text-xs font-medium transition-colors flex-shrink-0"
+                        className="px-3 sm:px-4 py-1.5 rounded-lg text-xs font-medium text-white transition-colors flex-shrink-0"
+                        style={{ background: "var(--green)" }}
                       >
                         {t(lang, "download")}
                       </a>
@@ -428,7 +425,8 @@ export default function Converter({ onConversionComplete }) {
               </div>
               <button
                 onClick={() => { reset(); setUrl(""); }}
-                className="block mx-auto mt-4 text-xs sm:text-sm text-gray-400 hover:text-white transition-colors"
+                className="block mx-auto mt-4 text-xs sm:text-sm transition-colors hover:opacity-80"
+                style={{ color: "var(--text-secondary)" }}
               >
                 {t(lang, "convertAnotherPlaylist")}
               </button>
@@ -444,18 +442,18 @@ function FormatQualitySelector({ lang, format, setFormat, quality, setQuality, d
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
       <div>
-        <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1.5 sm:mb-2">{t(lang, "format")}</label>
+        <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: "var(--text-secondary)" }}>{t(lang, "format")}</label>
         <div className="flex gap-2">
           {FORMATS.map((f) => (
             <button
               key={f.value}
               onClick={() => setFormat(f.value)}
               disabled={disabled}
-              className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                format === f.value
-                  ? "bg-red-600 text-white"
-                  : "bg-white/5 text-gray-400 hover:bg-white/10"
-              }`}
+              className="flex-1 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
+              style={{
+                background: format === f.value ? "var(--accent)" : "var(--bg-tertiary)",
+                color: format === f.value ? "#fff" : "var(--text-secondary)",
+              }}
             >
               {f.label}
             </button>
@@ -463,15 +461,20 @@ function FormatQualitySelector({ lang, format, setFormat, quality, setQuality, d
         </div>
       </div>
       <div>
-        <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1.5 sm:mb-2">{t(lang, "quality")}</label>
+        <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: "var(--text-secondary)" }}>{t(lang, "quality")}</label>
         <select
           value={quality}
           onChange={(e) => setQuality(e.target.value)}
           disabled={disabled}
-          className="w-full py-2 px-2 sm:px-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="w-full py-2 px-2 sm:px-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+          style={{
+            background: "var(--bg-tertiary)",
+            border: "1px solid var(--border)",
+            color: "var(--text-primary)",
+          }}
         >
           {QUALITIES.map((q) => (
-            <option key={q.value} value={q.value} className="bg-gray-900">{q.label}</option>
+            <option key={q.value} value={q.value}>{q.label}</option>
           ))}
         </select>
       </div>
@@ -482,14 +485,14 @@ function FormatQualitySelector({ lang, format, setFormat, quality, setQuality, d
 function ConvertingSpinner({ lang }) {
   return (
     <div className="text-center py-4">
-      <div className="inline-flex items-center gap-2 sm:gap-3 text-red-400">
+      <div className="inline-flex items-center gap-2 sm:gap-3" style={{ color: "var(--accent)" }}>
         <svg className="animate-spin h-5 w-5 sm:h-6 sm:w-6" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
         <span className="text-base sm:text-lg font-medium">{t(lang, "converting")}</span>
       </div>
-      <p className="text-xs sm:text-sm text-gray-400 mt-2">{t(lang, "convertingWait")}</p>
+      <p className="text-xs sm:text-sm mt-2" style={{ color: "var(--text-secondary)" }}>{t(lang, "convertingWait")}</p>
     </div>
   );
 }
@@ -499,7 +502,8 @@ function DownloadButton({ lang, id, format, fileSize, onReset }) {
     <div className="text-center">
       <a
         href={`${API}/download/${id}`}
-        className="inline-flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 bg-green-600 hover:bg-green-700 rounded-xl font-semibold text-base sm:text-lg transition-colors"
+        className="inline-flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold text-base sm:text-lg text-white transition-colors"
+        style={{ background: "var(--green)" }}
       >
         <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -509,7 +513,7 @@ function DownloadButton({ lang, id, format, fileSize, onReset }) {
           <span className="text-xs sm:text-sm opacity-75">({(fileSize / 1024 / 1024).toFixed(1)} MB)</span>
         )}
       </a>
-      <button onClick={onReset} className="block mx-auto mt-4 text-xs sm:text-sm text-gray-400 hover:text-white transition-colors">
+      <button onClick={onReset} className="block mx-auto mt-4 text-xs sm:text-sm transition-colors hover:opacity-80" style={{ color: "var(--text-secondary)" }}>
         {t(lang, "convertAnother")}
       </button>
     </div>

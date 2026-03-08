@@ -114,9 +114,9 @@ const translations = {
 };
 
 export const LANGUAGES = [
-  { code: "es", label: "ES", flag: "\u{1F1EA}\u{1F1E8}" },  // Ecuador
-  { code: "en", label: "EN", flag: "\u{1F1EA}\u{1F1F8}" },  // Spain
-  { code: "eu", label: "EU", flag: "\u{1F3F4}\u{E0065}\u{E0073}\u{E0070}\u{E0076}\u{E007F}" }, // Basque Country (unofficial flag sequence - may not render everywhere)
+  { code: "es", label: "ES", fullName: "Castellano", flag: "\u{1F1EA}\u{1F1E8}" },
+  { code: "en", label: "EN", fullName: "English", flag: "\u{1F1EA}\u{1F1F8}" },
+  { code: "eu", label: "EU", fullName: "Euskara", flag: null },
 ];
 
 // Fallback flag for Basque Country since the emoji may not render
