@@ -42,6 +42,7 @@ export default function Converter({ onConversionComplete }) {
   const [turnstileToken, setTurnstileToken] = useState("");
 
   const [playlistVideos, setPlaylistVideos] = useState([]);
+  const [selectedVideos, setSelectedVideos] = useState(new Set());
   const [playlistUnavailable, setPlaylistUnavailable] = useState([]);
   const [playlistConversions, setPlaylistConversions] = useState([]);
   const [playlistStatus, setPlaylistStatus] = useState("idle");
@@ -53,6 +54,7 @@ export default function Converter({ onConversionComplete }) {
     setStatus("idle");
     setError("");
     setPlaylistVideos([]);
+    setSelectedVideos(new Set());
     setPlaylistUnavailable([]);
     setPlaylistConversions([]);
     setPlaylistStatus("idle");
@@ -133,6 +135,7 @@ export default function Converter({ onConversionComplete }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setPlaylistVideos(data.videos);
+      setSelectedVideos(new Set(data.videos.map((_, i) => i)));
       setPlaylistUnavailable(data.unavailable || []);
       setPlaylistStatus("info");
     } catch (err) {
@@ -145,7 +148,7 @@ export default function Converter({ onConversionComplete }) {
     setPlaylistStatus("converting");
     setError("");
     try {
-      const videoUrls = playlistVideos.map((v) => v.url || v.id);
+      const videoUrls = playlistVideos.filter((_, i) => selectedVideos.has(i)).map((v) => v.url || v.id);
       const res = await fetch(`${API}/convert-playlist`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -328,9 +331,41 @@ export default function Converter({ onConversionComplete }) {
                 </div>
               )}
 
+              <div className="flex items-center justify-between mb-2">
+                <label className="flex items-center gap-2 cursor-pointer text-xs sm:text-sm" style={{ color: "var(--text-secondary)" }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedVideos.size === playlistVideos.length}
+                    onChange={(e) => {
+                      if (e.target.checked) setSelectedVideos(new Set(playlistVideos.map((_, i) => i)));
+                      else setSelectedVideos(new Set());
+                    }}
+                    className="accent-[var(--green)]"
+                  />
+                  {t(lang, "selectAll")} ({selectedVideos.size}/{playlistVideos.length})
+                </label>
+              </div>
               <div className="mb-4 sm:mb-6 max-h-52 sm:max-h-64 overflow-y-auto space-y-2 pr-1 sm:pr-2">
                 {playlistVideos.map((v, i) => (
-                  <div key={v.id || i} className="flex items-center gap-2 sm:gap-3 p-2 rounded-lg" style={{ background: "var(--bg-tertiary)" }}>
+                  <div
+                    key={v.id || i}
+                    className="flex items-center gap-2 sm:gap-3 p-2 rounded-lg cursor-pointer"
+                    style={{ background: "var(--bg-tertiary)", opacity: selectedVideos.has(i) ? 1 : 0.5 }}
+                    onClick={() => {
+                      setSelectedVideos((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(i)) next.delete(i);
+                        else next.add(i);
+                        return next;
+                      });
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedVideos.has(i)}
+                      readOnly
+                      className="accent-[var(--green)] flex-shrink-0"
+                    />
                     <span className="text-xs w-5 sm:w-6 text-right flex-shrink-0" style={{ color: "var(--text-tertiary)" }}>{i + 1}</span>
                     {v.thumbnail && (
                       <img src={v.thumbnail} alt="" className="w-12 h-8 sm:w-16 sm:h-10 object-cover rounded flex-shrink-0" />
@@ -351,11 +386,11 @@ export default function Converter({ onConversionComplete }) {
               <Turnstile onToken={setTurnstileToken} />
               <button
                 onClick={startPlaylistConversion}
-                disabled={!turnstileToken}
+                disabled={!turnstileToken || selectedVideos.size === 0}
                 className="w-full py-2.5 sm:py-3 rounded-xl font-semibold text-sm sm:text-lg text-white transition-all transform hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ background: "var(--green)" }}
               >
-                {t(lang, "downloadAll")} {playlistVideos.length} {t(lang, "videosAs")} {format.toUpperCase()}
+                {t(lang, "downloadAll")} {selectedVideos.size} {t(lang, "videosAs")} {format.toUpperCase()}
               </button>
             </>
           )}

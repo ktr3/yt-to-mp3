@@ -31,6 +31,7 @@ const translations = {
     failed: "fallidos",
     convertAnotherPlaylist: "Convertir otra playlist",
     processing: "Procesando...",
+    selectAll: "Seleccionar todo",
     // History
     recentConversions: "Conversiones Recientes",
     noConversions: "Sin conversiones aun",
@@ -67,6 +68,7 @@ const translations = {
     failed: "failed",
     convertAnotherPlaylist: "Convert another playlist",
     processing: "Processing...",
+    selectAll: "Select all",
     recentConversions: "Recent Conversions",
     noConversions: "No conversions yet",
     historyHint: "Your conversion history will appear here",
@@ -102,6 +104,7 @@ const translations = {
     failed: "huts egin du",
     convertAnotherPlaylist: "Beste playlist bat bihurtu",
     processing: "Prozesatzen...",
+    selectAll: "Guztiak hautatu",
     recentConversions: "Azken Bihurketak",
     noConversions: "Oraindik bihurketarik ez",
     historyHint: "Zure bihurketa historia hemen agertuko da",
