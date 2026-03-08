@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLang } from "./LangContext";
+import { t } from "../i18n";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -11,14 +13,14 @@ function formatDuration(seconds) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-function timeAgo(dateStr) {
+function timeAgo(dateStr, lang) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return t(lang, "justNow");
+  if (minutes < 60) return `${minutes}${t(lang, "mAgo")}`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
+  if (hours < 24) return `${hours}${t(lang, "hAgo")}`;
+  return `${Math.floor(hours / 24)}${t(lang, "dAgo")}`;
 }
 
 const STATUS_STYLES = {
@@ -29,6 +31,7 @@ const STATUS_STYLES = {
 };
 
 export default function History() {
+  const { lang } = useLang();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,7 +48,7 @@ export default function History() {
   if (loading) {
     return (
       <div className="text-center text-gray-500 py-8">
-        Loading history...
+        {t(lang, "loadingHistory")}
       </div>
     );
   }
@@ -53,8 +56,8 @@ export default function History() {
   if (items.length === 0) {
     return (
       <div className="text-center text-gray-500 py-8">
-        <p className="text-base sm:text-lg">No conversions yet</p>
-        <p className="text-xs sm:text-sm mt-1">Your conversion history will appear here</p>
+        <p className="text-base sm:text-lg">{t(lang, "noConversions")}</p>
+        <p className="text-xs sm:text-sm mt-1">{t(lang, "historyHint")}</p>
       </div>
     );
   }
@@ -62,7 +65,7 @@ export default function History() {
   return (
     <div>
       <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-200">
-        Recent Conversions
+        {t(lang, "recentConversions")}
       </h2>
       <div className="space-y-2 sm:space-y-3">
         {items.map((item) => (
@@ -84,7 +87,7 @@ export default function History() {
               <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5">
                 {item.format?.toUpperCase()} &bull; {item.quality} kbps &bull;{" "}
                 <span className="hidden sm:inline">{formatDuration(item.video_duration)} &bull; </span>
-                {timeAgo(item.created_at)}
+                {timeAgo(item.created_at, lang)}
               </p>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
@@ -100,7 +103,7 @@ export default function History() {
                   href={`${API}/download/${item.id}`}
                   className="px-2 sm:px-3 py-1 sm:py-1.5 bg-green-600 hover:bg-green-700 rounded-lg text-[10px] sm:text-xs font-medium transition-colors"
                 >
-                  Download
+                  {t(lang, "download")}
                 </a>
               )}
             </div>

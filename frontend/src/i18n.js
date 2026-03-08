@@ -1,0 +1,127 @@
+const translations = {
+  es: {
+    // Header
+    subtitle: "Conversor de YouTube a MP3/WAV",
+    badge: "Gratis e Ilimitado",
+    // Converter tabs
+    singleVideo: "Video Individual",
+    playlist: "Playlist",
+    // URL input
+    pasteVideoUrl: "Pega la URL del video de YouTube",
+    pastePlaylistUrl: "Pega la URL de la playlist de YouTube",
+    getInfo: "Obtener Info",
+    loading: "Cargando...",
+    // Format/Quality
+    format: "Formato",
+    quality: "Calidad",
+    // Single video
+    download: "Descargar",
+    converting: "Convirtiendo...",
+    convertingWait: "Esto puede tardar un momento",
+    convertAnother: "Convertir otro video",
+    // Playlist
+    videosFound: "videos encontrados en la playlist",
+    videosSkipped: "video(s) omitidos (eliminados o privados)",
+    downloadAll: "Descargar",
+    videosAs: "videos como",
+    fetchingPlaylist: "Obteniendo playlist...",
+    convertingProgress: "Convirtiendo...",
+    ofConverted: "de",
+    converted: "convertidos",
+    failed: "fallidos",
+    convertAnotherPlaylist: "Convertir otra playlist",
+    processing: "Procesando...",
+    // History
+    recentConversions: "Conversiones Recientes",
+    noConversions: "Sin conversiones aun",
+    historyHint: "Tu historial de conversiones aparecera aqui",
+    loadingHistory: "Cargando historial...",
+    justNow: "ahora",
+    mAgo: "m",
+    hAgo: "h",
+    dAgo: "d",
+  },
+  en: {
+    subtitle: "YouTube to MP3/WAV Converter",
+    badge: "Free & Unlimited",
+    singleVideo: "Single Video",
+    playlist: "Playlist",
+    pasteVideoUrl: "Paste YouTube Video URL",
+    pastePlaylistUrl: "Paste YouTube Playlist URL",
+    getInfo: "Get Info",
+    loading: "Loading...",
+    format: "Format",
+    quality: "Quality",
+    download: "Download",
+    converting: "Converting...",
+    convertingWait: "This may take a moment",
+    convertAnother: "Convert another video",
+    videosFound: "videos found in playlist",
+    videosSkipped: "video(s) skipped (deleted or private)",
+    downloadAll: "Download",
+    videosAs: "videos as",
+    fetchingPlaylist: "Fetching playlist...",
+    convertingProgress: "Converting...",
+    ofConverted: "of",
+    converted: "converted",
+    failed: "failed",
+    convertAnotherPlaylist: "Convert another playlist",
+    processing: "Processing...",
+    recentConversions: "Recent Conversions",
+    noConversions: "No conversions yet",
+    historyHint: "Your conversion history will appear here",
+    loadingHistory: "Loading history...",
+    justNow: "just now",
+    mAgo: "m ago",
+    hAgo: "h ago",
+    dAgo: "d ago",
+  },
+  eu: {
+    subtitle: "YouTubetik MP3/WAV bihurtzailea",
+    badge: "Doakoa eta Mugagabea",
+    singleVideo: "Bideo Bakarra",
+    playlist: "Playlist",
+    pasteVideoUrl: "Itsatsi YouTubeko bideoaren URLa",
+    pastePlaylistUrl: "Itsatsi YouTubeko playlistaren URLa",
+    getInfo: "Lortu Info",
+    loading: "Kargatzen...",
+    format: "Formatua",
+    quality: "Kalitatea",
+    download: "Deskargatu",
+    converting: "Bihurtzen...",
+    convertingWait: "Momentu bat itxaron",
+    convertAnother: "Beste bideo bat bihurtu",
+    videosFound: "bideo aurkitu dira playlistean",
+    videosSkipped: "bideo baztertu dira (ezabatuak edo pribatuak)",
+    downloadAll: "Deskargatu",
+    videosAs: "bideo",
+    fetchingPlaylist: "Playlista lortzen...",
+    convertingProgress: "Bihurtzen...",
+    ofConverted: "/",
+    converted: "bihurtuta",
+    failed: "huts egin du",
+    convertAnotherPlaylist: "Beste playlist bat bihurtu",
+    processing: "Prozesatzen...",
+    recentConversions: "Azken Bihurketak",
+    noConversions: "Oraindik bihurketarik ez",
+    historyHint: "Zure bihurketa historia hemen agertuko da",
+    loadingHistory: "Historia kargatzen...",
+    justNow: "orain",
+    mAgo: "min",
+    hAgo: "ord",
+    dAgo: "eg",
+  },
+};
+
+export const LANGUAGES = [
+  { code: "es", label: "ES", flag: "\u{1F1EA}\u{1F1E8}" },  // Ecuador
+  { code: "en", label: "EN", flag: "\u{1F1EA}\u{1F1F8}" },  // Spain
+  { code: "eu", label: "EU", flag: "\u{1F3F4}\u{E0065}\u{E0073}\u{E0070}\u{E0076}\u{E007F}" }, // Basque Country (unofficial flag sequence - may not render everywhere)
+];
+
+// Fallback flag for Basque Country since the emoji may not render
+export const BASQUE_FLAG_SVG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 20"><rect fill="#D52B1E" width="30" height="20"/><path d="M0 0l15 10L0 20z" fill="#fff"/><path d="M30 0L15 10l15 10z" fill="#fff"/><path d="M0 0l15 10L30 0z" fill="#009B48"/><path d="M0 20l15-10 15 10z" fill="#009B48"/></svg>')}`;
+
+export function t(lang, key) {
+  return translations[lang]?.[key] || translations.en[key] || key;
+}

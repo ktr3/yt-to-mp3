@@ -1,4 +1,12 @@
+"use client";
+
+import { useLang } from "./LangContext";
+import LangSwitcher from "./LangSwitcher";
+import { t } from "../i18n";
+
 export default function Header() {
+  const { lang } = useLang();
+
   return (
     <header className="border-b border-white/10 backdrop-blur-sm">
       <div className="max-w-4xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
@@ -10,14 +18,15 @@ export default function Header() {
               <span className="text-white">to</span>{" "}
               <span className="text-green-500">MP3</span>
             </h1>
-            <p className="text-[10px] sm:text-xs text-gray-400">YouTube to MP3/WAV Converter</p>
+            <p className="text-[10px] sm:text-xs text-gray-400">{t(lang, "subtitle")}</p>
           </div>
         </div>
-        <nav className="flex items-center gap-4 text-sm text-gray-400">
-          <span className="px-2 sm:px-3 py-1 rounded-full bg-white/5 text-[10px] sm:text-xs">
-            Free &amp; Unlimited
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="hidden sm:inline px-3 py-1 rounded-full bg-white/5 text-xs text-gray-400">
+            {t(lang, "badge")}
           </span>
-        </nav>
+          <LangSwitcher />
+        </div>
       </div>
     </header>
   );

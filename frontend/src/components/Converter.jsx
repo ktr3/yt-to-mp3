@@ -2,6 +2,8 @@
 
 import { useState, useRef, useCallback } from "react";
 import Turnstile from "./Turnstile";
+import { useLang } from "./LangContext";
+import { t } from "../i18n";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -25,22 +27,20 @@ function formatDuration(seconds) {
 }
 
 export default function Converter({ onConversionComplete }) {
-  const [mode, setMode] = useState("single"); // single | playlist
+  const { lang } = useLang();
+  const [mode, setMode] = useState("single");
   const [url, setUrl] = useState("");
   const [format, setFormat] = useState("mp3");
   const [quality, setQuality] = useState("192");
 
-  // Single video state
   const [videoInfo, setVideoInfo] = useState(null);
   const [conversion, setConversion] = useState(null);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
   const pollingRef = useRef(null);
 
-  // Turnstile token
   const [turnstileToken, setTurnstileToken] = useState("");
 
-  // Playlist state
   const [playlistVideos, setPlaylistVideos] = useState([]);
   const [playlistUnavailable, setPlaylistUnavailable] = useState([]);
   const [playlistConversions, setPlaylistConversions] = useState([]);
@@ -60,8 +60,6 @@ export default function Converter({ onConversionComplete }) {
     if (pollingRef.current) clearInterval(pollingRef.current);
     if (playlistPollingRef.current) clearInterval(playlistPollingRef.current);
   };
-
-  // ─── SINGLE VIDEO ────────────────────────────────────────
 
   const fetchInfo = async () => {
     reset();
@@ -123,8 +121,6 @@ export default function Converter({ onConversionComplete }) {
     [onConversionComplete]
   );
 
-  // ─── PLAYLIST ────────────────────────────────────────────
-
   const fetchPlaylistInfo = async () => {
     reset();
     setPlaylistStatus("loading");
@@ -176,9 +172,7 @@ export default function Converter({ onConversionComplete }) {
           });
           const data = await res.json();
           if (!Array.isArray(data)) return;
-
           setPlaylistConversions(data);
-
           const allDone = data.every((c) => c.status === "completed" || c.status === "failed");
           if (allDone) {
             clearInterval(playlistPollingRef.current);
@@ -217,7 +211,7 @@ export default function Converter({ onConversionComplete }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          Single Video
+          {t(lang, "singleVideo")}
         </button>
         <button
           onClick={() => { setMode("playlist"); reset(); }}
@@ -230,25 +224,21 @@ export default function Converter({ onConversionComplete }) {
           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
           </svg>
-          Playlist
+          {t(lang, "playlist")}
         </button>
       </div>
 
       {/* URL Input */}
       <form onSubmit={handleSubmit} className="mb-4 sm:mb-6">
         <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
-          {mode === "single" ? "Paste YouTube Video URL" : "Paste YouTube Playlist URL"}
+          {mode === "single" ? t(lang, "pasteVideoUrl") : t(lang, "pastePlaylistUrl")}
         </label>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <input
             type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder={
-              mode === "single"
-                ? "https://www.youtube.com/watch?v=..."
-                : "https://www.youtube.com/playlist?list=..."
-            }
+            placeholder="https://www.youtube.com/watch?v=..."
             className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-sm sm:text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
           />
           <button
@@ -263,7 +253,7 @@ export default function Converter({ onConversionComplete }) {
                 : "bg-green-600 hover:bg-green-700 disabled:opacity-50"
             } disabled:cursor-not-allowed`}
           >
-            {(status === "loading" || playlistStatus === "loading") ? "Loading..." : "Get Info"}
+            {(status === "loading" || playlistStatus === "loading") ? t(lang, "loading") : t(lang, "getInfo")}
           </button>
         </div>
       </form>
@@ -294,6 +284,7 @@ export default function Converter({ onConversionComplete }) {
 
           {(status === "info" || status === "converting" || status === "done") && (
             <FormatQualitySelector
+              lang={lang}
               format={format} setFormat={setFormat}
               quality={quality} setQuality={setQuality}
               disabled={status !== "info"}
@@ -308,15 +299,15 @@ export default function Converter({ onConversionComplete }) {
                 disabled={!turnstileToken}
                 className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 rounded-xl font-semibold text-base sm:text-lg transition-all transform hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Download {format.toUpperCase()}
+                {t(lang, "download")} {format.toUpperCase()}
               </button>
             </>
           )}
 
-          {status === "converting" && <ConvertingSpinner />}
+          {status === "converting" && <ConvertingSpinner lang={lang} />}
 
           {status === "done" && conversion && (
-            <DownloadButton id={conversion.id} format={format} fileSize={conversion.file_size} onReset={() => { reset(); setUrl(""); }} />
+            <DownloadButton lang={lang} id={conversion.id} format={format} fileSize={conversion.file_size} onReset={() => { reset(); setUrl(""); }} />
           )}
         </>
       )}
@@ -328,14 +319,14 @@ export default function Converter({ onConversionComplete }) {
             <>
               <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
                 <p className="text-green-300 font-semibold text-sm sm:text-base">
-                  {playlistVideos.length} videos found in playlist
+                  {playlistVideos.length} {t(lang, "videosFound")}
                 </p>
               </div>
 
               {playlistUnavailable.length > 0 && (
                 <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
                   <p className="text-yellow-300 text-xs sm:text-sm font-medium">
-                    {playlistUnavailable.length} video{playlistUnavailable.length > 1 ? "s" : ""} skipped (deleted or private)
+                    {playlistUnavailable.length} {t(lang, "videosSkipped")}
                   </p>
                 </div>
               )}
@@ -356,6 +347,7 @@ export default function Converter({ onConversionComplete }) {
               </div>
 
               <FormatQualitySelector
+                lang={lang}
                 format={format} setFormat={setFormat}
                 quality={quality} setQuality={setQuality}
                 disabled={false}
@@ -367,7 +359,7 @@ export default function Converter({ onConversionComplete }) {
                 disabled={!turnstileToken}
                 className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl font-semibold text-sm sm:text-lg transition-all transform hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Download {playlistVideos.length} videos as {format.toUpperCase()}
+                {t(lang, "downloadAll")} {playlistVideos.length} {t(lang, "videosAs")} {format.toUpperCase()}
               </button>
             </>
           )}
@@ -379,7 +371,7 @@ export default function Converter({ onConversionComplete }) {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                <span className="text-base sm:text-lg font-medium">Fetching playlist...</span>
+                <span className="text-base sm:text-lg font-medium">{t(lang, "fetchingPlaylist")}</span>
               </div>
             </div>
           )}
@@ -392,7 +384,7 @@ export default function Converter({ onConversionComplete }) {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
                 <span className="text-base sm:text-lg font-medium">
-                  Converting... {completedPlaylist.length}/{playlistConversions.length}
+                  {t(lang, "convertingProgress")} {completedPlaylist.length}/{playlistConversions.length}
                 </span>
               </div>
               <div className="w-full bg-white/10 rounded-full h-2">
@@ -408,17 +400,17 @@ export default function Converter({ onConversionComplete }) {
             <div className="space-y-3">
               <div className="p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-center">
                 <p className="text-green-300 font-semibold text-base sm:text-lg">
-                  {completedPlaylist.length} of {playlistConversions.length} converted
+                  {completedPlaylist.length} {t(lang, "ofConverted")} {playlistConversions.length} {t(lang, "converted")}
                 </p>
                 {failedPlaylist.length > 0 && (
-                  <p className="text-red-400 text-xs sm:text-sm mt-1">{failedPlaylist.length} failed</p>
+                  <p className="text-red-400 text-xs sm:text-sm mt-1">{failedPlaylist.length} {t(lang, "failed")}</p>
                 )}
               </div>
               <div className="max-h-52 sm:max-h-64 overflow-y-auto space-y-2 pr-1 sm:pr-2">
                 {playlistConversions.map((c) => (
                   <div key={c.id} className="flex items-center justify-between gap-2 sm:gap-3 p-2 sm:p-3 bg-white/5 rounded-lg">
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm text-white truncate">{c.video_title || "Processing..."}</p>
+                      <p className="text-xs sm:text-sm text-white truncate">{c.video_title || t(lang, "processing")}</p>
                       <p className={`text-xs ${c.status === "completed" ? "text-green-400" : "text-red-400"}`}>
                         {c.status}
                       </p>
@@ -428,7 +420,7 @@ export default function Converter({ onConversionComplete }) {
                         href={`${API}/download/${c.id}`}
                         className="px-3 sm:px-4 py-1.5 bg-green-600 hover:bg-green-700 rounded-lg text-xs font-medium transition-colors flex-shrink-0"
                       >
-                        Download
+                        {t(lang, "download")}
                       </a>
                     )}
                   </div>
@@ -438,7 +430,7 @@ export default function Converter({ onConversionComplete }) {
                 onClick={() => { reset(); setUrl(""); }}
                 className="block mx-auto mt-4 text-xs sm:text-sm text-gray-400 hover:text-white transition-colors"
               >
-                Convert another playlist
+                {t(lang, "convertAnotherPlaylist")}
               </button>
             </div>
           )}
@@ -448,11 +440,11 @@ export default function Converter({ onConversionComplete }) {
   );
 }
 
-function FormatQualitySelector({ format, setFormat, quality, setQuality, disabled }) {
+function FormatQualitySelector({ lang, format, setFormat, quality, setQuality, disabled }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
       <div>
-        <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1.5 sm:mb-2">Format</label>
+        <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1.5 sm:mb-2">{t(lang, "format")}</label>
         <div className="flex gap-2">
           {FORMATS.map((f) => (
             <button
@@ -471,7 +463,7 @@ function FormatQualitySelector({ format, setFormat, quality, setQuality, disable
         </div>
       </div>
       <div>
-        <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1.5 sm:mb-2">Quality</label>
+        <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1.5 sm:mb-2">{t(lang, "quality")}</label>
         <select
           value={quality}
           onChange={(e) => setQuality(e.target.value)}
@@ -487,7 +479,7 @@ function FormatQualitySelector({ format, setFormat, quality, setQuality, disable
   );
 }
 
-function ConvertingSpinner() {
+function ConvertingSpinner({ lang }) {
   return (
     <div className="text-center py-4">
       <div className="inline-flex items-center gap-2 sm:gap-3 text-red-400">
@@ -495,14 +487,14 @@ function ConvertingSpinner() {
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
-        <span className="text-base sm:text-lg font-medium">Converting...</span>
+        <span className="text-base sm:text-lg font-medium">{t(lang, "converting")}</span>
       </div>
-      <p className="text-xs sm:text-sm text-gray-400 mt-2">This may take a moment</p>
+      <p className="text-xs sm:text-sm text-gray-400 mt-2">{t(lang, "convertingWait")}</p>
     </div>
   );
 }
 
-function DownloadButton({ id, format, fileSize, onReset }) {
+function DownloadButton({ lang, id, format, fileSize, onReset }) {
   return (
     <div className="text-center">
       <a
@@ -512,13 +504,13 @@ function DownloadButton({ id, format, fileSize, onReset }) {
         <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        Download {format.toUpperCase()}
+        {t(lang, "download")} {format.toUpperCase()}
         {fileSize && (
           <span className="text-xs sm:text-sm opacity-75">({(fileSize / 1024 / 1024).toFixed(1)} MB)</span>
         )}
       </a>
       <button onClick={onReset} className="block mx-auto mt-4 text-xs sm:text-sm text-gray-400 hover:text-white transition-colors">
-        Convert another video
+        {t(lang, "convertAnother")}
       </button>
     </div>
   );
