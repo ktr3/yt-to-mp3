@@ -498,6 +498,22 @@ export default function Converter({ onConversionComplete }) {
                   <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--accent)" }}>{failedPlaylist.length} {t(lang, "failed")}</p>
                 )}
               </div>
+              {completedPlaylist.length > 1 && (
+                <button
+                  onClick={() => completedPlaylist.forEach((c, i) => setTimeout(() => {
+                    const a = document.createElement("a");
+                    a.href = `${API}/download/${c.id}`;
+                    a.download = "";
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                  }, i * 500))}
+                  className="w-full py-2.5 sm:py-3 rounded-xl font-semibold text-sm sm:text-lg text-white transition-all transform hover:scale-[1.01]"
+                  style={{ background: "var(--green)" }}
+                >
+                  {t(lang, "downloadAll")} {completedPlaylist.length} {t(lang, "videosAs")} {format.toUpperCase()}
+                </button>
+              )}
               <div className="max-h-52 sm:max-h-64 overflow-y-auto space-y-2 pr-1 sm:pr-2">
                 {playlistConversions.map((c) => (
                   <div key={c.id} className="flex items-center justify-between gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg" style={{ background: "var(--bg-tertiary)" }}>
