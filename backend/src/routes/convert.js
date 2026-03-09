@@ -161,13 +161,14 @@ router.post("/convert-playlist", verifyTurnstile, convertLimiter, async (req, re
       return res.status(400).json({ error: "No videos provided" });
     }
 
-    if (videoUrls.length > 50) {
-      return res.status(400).json({ error: "Maximum 50 videos per playlist conversion" });
+    if (videoUrls.length > 25) {
+      return res.status(400).json({ error: "Maximum 25 videos per playlist conversion" });
     }
 
     const conversions = [];
 
-    for (const videoUrl of videoUrls) {
+    for (let i = 0; i < videoUrls.length; i++) {
+      const videoUrl = videoUrls[i];
       const cleanUrl = typeof videoUrl === "string"
         ? (videoUrl.startsWith("http") ? videoUrl : `https://www.youtube.com/watch?v=${videoUrl}`)
         : `https://www.youtube.com/watch?v=${videoUrl}`;
@@ -181,12 +182,13 @@ router.post("/convert-playlist", verifyTurnstile, convertLimiter, async (req, re
 
       const conversionId = result.rows[0].id;
 
+      // Stagger playlist jobs: 15s delay between each to avoid YouTube rate limiting
       await convertQueue.add("convert", {
         conversionId,
         url: cleanUrl,
         format,
         quality,
-      });
+      }, { delay: i * 15000 });
 
       conversions.push({ id: conversionId, url: cleanUrl, status: "pending" });
     }
