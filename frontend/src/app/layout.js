@@ -10,6 +10,9 @@ export const metadata = {
     "audio converter",
     "extract audio",
   ],
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({ children }) {

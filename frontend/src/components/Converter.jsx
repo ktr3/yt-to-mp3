@@ -48,8 +48,8 @@ export default function Converter({ onConversionComplete }) {
   const [playlistStatus, setPlaylistStatus] = useState("idle");
   const playlistPollingRef = useRef(null);
   const [playlistPage, setPlaylistPage] = useState(0);
-  const VIDEOS_PER_PAGE = 25;
-  const MAX_SELECTION = 25;
+  const VIDEOS_PER_PAGE = 20;
+  const MAX_SELECTION = 10;
 
   const reset = () => {
     setVideoInfo(null);

@@ -161,8 +161,8 @@ router.post("/convert-playlist", verifyTurnstile, convertLimiter, async (req, re
       return res.status(400).json({ error: "No videos provided" });
     }
 
-    if (videoUrls.length > 25) {
-      return res.status(400).json({ error: "Maximum 25 videos per playlist conversion" });
+    if (videoUrls.length > 10) {
+      return res.status(400).json({ error: "Maximum 10 videos per playlist conversion" });
     }
 
     const conversions = [];

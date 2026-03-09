@@ -3,7 +3,8 @@ const path = require("path");
 const fs = require("fs");
 
 const DOWNLOADS_DIR = "/app/downloads";
-const COOKIES_FILE = "/app/downloads/cookies.txt";
+const COOKIES_MASTER = "/app/downloads/cookies.txt";
+const COOKIES_COPY = "/app/downloads/.cookies_work.txt";
 const OAUTH_CACHE_DIR = "/app/downloads/.oauth_cache";
 
 function getAuthArgs() {
@@ -11,8 +12,12 @@ function getAuthArgs() {
   if (fs.existsSync(path.join(OAUTH_CACHE_DIR, "token"))) {
     return ["--oauth2", "--cache-dir", OAUTH_CACHE_DIR];
   }
-  if (fs.existsSync(COOKIES_FILE)) {
-    return ["--cookies", COOKIES_FILE];
+  // Use a disposable copy of cookies so yt-dlp doesn't corrupt the master file
+  if (fs.existsSync(COOKIES_MASTER)) {
+    try {
+      fs.copyFileSync(COOKIES_MASTER, COOKIES_COPY);
+      return ["--cookies", COOKIES_COPY];
+    } catch {}
   }
   return [];
 }
