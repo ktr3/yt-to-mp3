@@ -36,7 +36,7 @@ app.use((_req, res, next) => {
 });
 
 app.use(express.json({ limit: "1mb" }));
-app.use(express.text({ limit: "1mb", type: "text/plain" }));
+app.use(express.text({ limit: "5mb", type: "text/plain" }));
 app.use("/downloads", express.static("/app/downloads"));
 
 // Global rate limit
