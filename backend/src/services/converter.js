@@ -9,8 +9,8 @@ const OAUTH_CACHE_DIR = "/app/downloads/.oauth_cache";
 
 function getAuthArgs() {
   // Prefer OAuth2 (auto-refreshing tokens) over cookies
-  if (fs.existsSync(path.join(OAUTH_CACHE_DIR, "token"))) {
-    return ["--oauth2", "--cache-dir", OAUTH_CACHE_DIR];
+  if (fs.existsSync(OAUTH_CACHE_DIR) && fs.readdirSync(OAUTH_CACHE_DIR).length > 0) {
+    return ["--username", "oauth2", "--password", "", "--cache-dir", OAUTH_CACHE_DIR];
   }
   // Use a disposable copy of cookies so yt-dlp doesn't corrupt the master file
   if (fs.existsSync(COOKIES_MASTER)) {

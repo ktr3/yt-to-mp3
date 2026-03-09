@@ -46,9 +46,9 @@ app.use("/api", convertRoutes);
 
 app.get("/api/health", (_req, res) => {
   const fs = require("fs");
-  const path = require("path");
   const cookiesExist = fs.existsSync("/app/downloads/cookies.txt");
-  const oauthExist = fs.existsSync(path.join("/app/downloads/.oauth_cache", "token"));
+  const oauthDir = "/app/downloads/.oauth_cache";
+  const oauthExist = fs.existsSync(oauthDir) && fs.readdirSync(oauthDir).length > 0;
   res.json({ status: "ok", cookies: cookiesExist, oauth: oauthExist });
 });
 
@@ -80,7 +80,8 @@ app.post("/api/admin/oauth2-setup", (req, res) => {
 
   // Run yt-dlp with oauth2 to trigger device code flow
   const proc = execFile("yt-dlp", [
-    "--oauth2", "--cache-dir", cacheDir,
+    "--username", "oauth2", "--password", "",
+    "--cache-dir", cacheDir,
     "--dump-json", "--no-download", "--no-warnings", "--no-playlist",
     "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   ], { timeout: 120000 }, (err, stdout, stderr) => {
@@ -91,22 +92,26 @@ app.post("/api/admin/oauth2-setup", (req, res) => {
     console.log("OAuth2 setup complete - token saved");
   });
 
-  // Capture stderr to get the device code URL
-  let stderrData = "";
-  proc.stderr.on("data", (data) => {
-    stderrData += data.toString();
-    // Look for the verification URL
-    const match = stderrData.match(/visit\s+(https:\/\/\S+)\s+.*?code\s+(\S+)/i)
-      || stderrData.match(/(https:\/\/www\.google\.com\/device)\s+.*?(\S{4}-\S{4})/i);
+  // Capture stderr+stdout to get the device code URL
+  let outputData = "";
+  const captureOutput = (data) => {
+    outputData += data.toString();
+    console.log("OAuth2 output:", data.toString().trim());
+    // yt-dlp prints: "Go to https://www.google.com/device , enter code XXX-XXX"
+    // or variations like "visit URL and enter code XXX"
+    const match = outputData.match(/(?:go to|visit)\s+(https:\/\/\S+)\s*,?\s*(?:and\s+)?enter\s+(?:the\s+)?code\s+(\S+)/i)
+      || outputData.match(/(https:\/\/www\.google\.com\/device)\S*\s+.*?([A-Z0-9]{3,4}[-\s][A-Z0-9]{3,4})/i);
     if (match && !res.headersSent) {
-      res.json({ url: match[1], code: match[2], message: "Go to URL and enter the code" });
+      res.json({ url: match[1].replace(/,+$/, ""), code: match[2], message: "Go to URL and enter the code" });
     }
-  });
+  };
+  proc.stderr.on("data", captureOutput);
+  proc.stdout.on("data", captureOutput);
 
   // Timeout fallback
   setTimeout(() => {
     if (!res.headersSent) {
-      res.json({ output: stderrData, message: "Check output for device code instructions" });
+      res.json({ output: outputData, message: "Check output for device code instructions" });
     }
   }, 15000);
 });
