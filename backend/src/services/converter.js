@@ -4,8 +4,13 @@ const fs = require("fs");
 
 const DOWNLOADS_DIR = "/app/downloads";
 const COOKIES_FILE = "/app/downloads/cookies.txt";
+const OAUTH_CACHE_DIR = "/app/downloads/.oauth_cache";
 
-function getCookiesArgs() {
+function getAuthArgs() {
+  // Prefer OAuth2 (auto-refreshing tokens) over cookies
+  if (fs.existsSync(path.join(OAUTH_CACHE_DIR, "token"))) {
+    return ["--oauth2", "--cache-dir", OAUTH_CACHE_DIR];
+  }
   if (fs.existsSync(COOKIES_FILE)) {
     return ["--cookies", COOKIES_FILE];
   }
@@ -16,7 +21,7 @@ function getVideoInfo(url) {
   return new Promise((resolve, reject) => {
     execFile(
       "yt-dlp",
-      [...getCookiesArgs(), "--dump-json", "--no-download", "--no-warnings", "--no-playlist", url],
+      [...getAuthArgs(), "--dump-json", "--no-download", "--no-warnings", "--no-playlist", url],
       { timeout: 30000 },
       (err, stdout) => {
         if (err) return reject(new Error("Failed to fetch video info"));
@@ -41,7 +46,7 @@ function getPlaylistInfo(url, maxItems = 50) {
     execFile(
       "yt-dlp",
       [
-        ...getCookiesArgs(),
+        ...getAuthArgs(),
         "--flat-playlist", "--dump-json", "--no-warnings", "--yes-playlist",
         "--playlist-end", String(maxItems),
         url,
@@ -100,7 +105,7 @@ function downloadAudio(url, conversionId, format, quality) {
     const outputFile = path.join(DOWNLOADS_DIR, `${conversionId}.${format}`);
 
     const args = [
-      ...getCookiesArgs(),
+      ...getAuthArgs(),
       "-x",
       "--audio-format", format,
       "--audio-quality", "0",

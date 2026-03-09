@@ -46,8 +46,10 @@ app.use("/api", convertRoutes);
 
 app.get("/api/health", (_req, res) => {
   const fs = require("fs");
+  const path = require("path");
   const cookiesExist = fs.existsSync("/app/downloads/cookies.txt");
-  res.json({ status: "ok", cookies: cookiesExist });
+  const oauthExist = fs.existsSync(path.join("/app/downloads/.oauth_cache", "token"));
+  res.json({ status: "ok", cookies: cookiesExist, oauth: oauthExist });
 });
 
 // Upload cookies (protected by admin secret)
@@ -63,6 +65,50 @@ app.post("/api/admin/cookies", (req, res) => {
   } catch (err) {
     res.status(500).json({ error: "Failed to write cookies" });
   }
+});
+
+// Start OAuth2 setup (protected by admin secret)
+app.post("/api/admin/oauth2-setup", (req, res) => {
+  const secret = req.headers["x-admin-secret"];
+  if (!secret || secret !== process.env.ADMIN_SECRET) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+  const { execFile } = require("child_process");
+  const fs = require("fs");
+  const cacheDir = "/app/downloads/.oauth_cache";
+  fs.mkdirSync(cacheDir, { recursive: true });
+
+  // Run yt-dlp with oauth2 to trigger device code flow
+  const proc = execFile("yt-dlp", [
+    "--oauth2", "--cache-dir", cacheDir,
+    "--dump-json", "--no-download", "--no-warnings", "--no-playlist",
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  ], { timeout: 120000 }, (err, stdout, stderr) => {
+    if (err) {
+      console.error("OAuth2 setup error:", stderr);
+      return; // Response already sent with device code
+    }
+    console.log("OAuth2 setup complete - token saved");
+  });
+
+  // Capture stderr to get the device code URL
+  let stderrData = "";
+  proc.stderr.on("data", (data) => {
+    stderrData += data.toString();
+    // Look for the verification URL
+    const match = stderrData.match(/visit\s+(https:\/\/\S+)\s+.*?code\s+(\S+)/i)
+      || stderrData.match(/(https:\/\/www\.google\.com\/device)\s+.*?(\S{4}-\S{4})/i);
+    if (match && !res.headersSent) {
+      res.json({ url: match[1], code: match[2], message: "Go to URL and enter the code" });
+    }
+  });
+
+  // Timeout fallback
+  setTimeout(() => {
+    if (!res.headersSent) {
+      res.json({ output: stderrData, message: "Check output for device code instructions" });
+    }
+  }, 15000);
 });
 
 async function main() {
