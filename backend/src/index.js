@@ -12,7 +12,9 @@ const PORT = process.env.PORT || 3001;
 app.set("trust proxy", 1);
 
 // CORS
-const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:3000").split(",");
+const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:3000")
+  .split(",")
+  .map(o => o.trim());
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {

@@ -103,10 +103,9 @@ function downloadAudio(url, conversionId, format, quality) {
       ...getCookiesArgs(),
       "-x",
       "--audio-format", format,
-      "--audio-quality", `${quality}k`,
+      "--audio-quality", "0",
       "--no-playlist",
       "--no-warnings",
-      "--max-filesize", "100m",
       "-o", outputTemplate,
       url,
     ];
