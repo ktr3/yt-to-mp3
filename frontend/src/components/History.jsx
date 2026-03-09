@@ -45,6 +45,14 @@ export default function History() {
       .finally(() => setLoading(false));
   }, []);
 
+  const clearHistory = async () => {
+    if (!confirm(t(lang, "clearHistoryConfirm"))) return;
+    try {
+      await fetch(`${API}/history`, { method: "DELETE" });
+      setItems([]);
+    } catch {}
+  };
+
   if (loading) {
     return (
       <div className="text-center py-8" style={{ color: "var(--text-tertiary)" }}>
@@ -64,9 +72,18 @@ export default function History() {
 
   return (
     <div>
-      <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4" style={{ color: "var(--text-primary)" }}>
-        {t(lang, "recentConversions")}
-      </h2>
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <h2 className="text-base sm:text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
+          {t(lang, "recentConversions")}
+        </h2>
+        <button
+          onClick={clearHistory}
+          className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors hover:opacity-80"
+          style={{ background: "rgba(252,60,68,0.1)", color: "#fc3c44" }}
+        >
+          {t(lang, "clearHistory")}
+        </button>
+      </div>
       <div className="space-y-2 sm:space-y-3">
         {items.map((item) => {
           const st = STATUS_STYLES[item.status] || {};

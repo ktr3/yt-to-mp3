@@ -47,6 +47,9 @@ export default function Converter({ onConversionComplete }) {
   const [playlistConversions, setPlaylistConversions] = useState([]);
   const [playlistStatus, setPlaylistStatus] = useState("idle");
   const playlistPollingRef = useRef(null);
+  const [playlistPage, setPlaylistPage] = useState(0);
+  const VIDEOS_PER_PAGE = 25;
+  const MAX_SELECTION = 25;
 
   const reset = () => {
     setVideoInfo(null);
@@ -58,6 +61,7 @@ export default function Converter({ onConversionComplete }) {
     setPlaylistUnavailable([]);
     setPlaylistConversions([]);
     setPlaylistStatus("idle");
+    setPlaylistPage(0);
     setTurnstileToken("");
     if (pollingRef.current) clearInterval(pollingRef.current);
     if (playlistPollingRef.current) clearInterval(playlistPollingRef.current);
@@ -135,7 +139,7 @@ export default function Converter({ onConversionComplete }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setPlaylistVideos(data.videos);
-      setSelectedVideos(new Set(data.videos.map((_, i) => i)));
+      setSelectedVideos(new Set(data.videos.slice(0, MAX_SELECTION).map((_, i) => i)));
       setPlaylistUnavailable(data.unavailable || []);
       setPlaylistStatus("info");
     } catch (err) {
@@ -331,52 +335,109 @@ export default function Converter({ onConversionComplete }) {
                 </div>
               )}
 
-              <div className="flex items-center justify-between mb-2">
-                <label className="flex items-center gap-2 cursor-pointer text-xs sm:text-sm" style={{ color: "var(--text-secondary)" }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedVideos.size === playlistVideos.length}
-                    onChange={(e) => {
-                      if (e.target.checked) setSelectedVideos(new Set(playlistVideos.map((_, i) => i)));
-                      else setSelectedVideos(new Set());
-                    }}
-                    className="accent-[var(--green)]"
-                  />
-                  {t(lang, "selectAll")} ({selectedVideos.size}/{playlistVideos.length})
-                </label>
-              </div>
-              <div className="mb-4 sm:mb-6 max-h-52 sm:max-h-64 overflow-y-auto space-y-2 pr-1 sm:pr-2">
-                {playlistVideos.map((v, i) => (
-                  <div
-                    key={v.id || i}
-                    className="flex items-center gap-2 sm:gap-3 p-2 rounded-lg cursor-pointer"
-                    style={{ background: "var(--bg-tertiary)", opacity: selectedVideos.has(i) ? 1 : 0.5 }}
-                    onClick={() => {
-                      setSelectedVideos((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(i)) next.delete(i);
-                        else next.add(i);
-                        return next;
-                      });
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedVideos.has(i)}
-                      readOnly
-                      className="accent-[var(--green)] flex-shrink-0"
-                    />
-                    <span className="text-xs w-5 sm:w-6 text-right flex-shrink-0" style={{ color: "var(--text-tertiary)" }}>{i + 1}</span>
-                    {v.thumbnail && (
-                      <img src={v.thumbnail} alt="" className="w-12 h-8 sm:w-16 sm:h-10 object-cover rounded flex-shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm truncate" style={{ color: "var(--text-primary)" }}>{v.title || `Video ${v.id}`}</p>
-                      <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>{formatDuration(v.duration)}</p>
+              {(() => {
+                const totalPages = Math.ceil(playlistVideos.length / VIDEOS_PER_PAGE);
+                const pageStart = playlistPage * VIDEOS_PER_PAGE;
+                const pageEnd = Math.min(pageStart + VIDEOS_PER_PAGE, playlistVideos.length);
+                const pageVideos = playlistVideos.slice(pageStart, pageEnd);
+                const pageIndices = pageVideos.map((_, i) => pageStart + i);
+                const allPageSelected = pageIndices.every((i) => selectedVideos.has(i));
+
+                return (
+                  <>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="flex items-center gap-2 cursor-pointer text-xs sm:text-sm" style={{ color: "var(--text-secondary)" }}>
+                        <input
+                          type="checkbox"
+                          checked={allPageSelected}
+                          onChange={(e) => {
+                            setSelectedVideos((prev) => {
+                              const next = new Set(prev);
+                              if (e.target.checked) {
+                                for (const i of pageIndices) {
+                                  if (next.size < MAX_SELECTION || next.has(i)) next.add(i);
+                                }
+                              } else {
+                                for (const i of pageIndices) next.delete(i);
+                              }
+                              return next;
+                            });
+                          }}
+                          className="accent-[var(--green)]"
+                        />
+                        {t(lang, "selectAll")} ({selectedVideos.size}/{playlistVideos.length})
+                      </label>
+                      <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded" style={{ background: "rgba(255,204,0,0.1)", color: "#ffcc00" }}>
+                        {t(lang, "maxSelection")}
+                      </span>
                     </div>
-                  </div>
-                ))}
-              </div>
+
+                    <div className="mb-3 sm:mb-4 max-h-52 sm:max-h-64 overflow-y-auto space-y-2 pr-1 sm:pr-2">
+                      {pageVideos.map((v, pi) => {
+                        const globalIndex = pageStart + pi;
+                        const isSelected = selectedVideos.has(globalIndex);
+                        return (
+                          <div
+                            key={v.id || globalIndex}
+                            className="flex items-center gap-2 sm:gap-3 p-2 rounded-lg cursor-pointer"
+                            style={{ background: "var(--bg-tertiary)", opacity: isSelected ? 1 : 0.5 }}
+                            onClick={() => {
+                              setSelectedVideos((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(globalIndex)) {
+                                  next.delete(globalIndex);
+                                } else if (next.size < MAX_SELECTION) {
+                                  next.add(globalIndex);
+                                }
+                                return next;
+                              });
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              readOnly
+                              className="accent-[var(--green)] flex-shrink-0"
+                            />
+                            <span className="text-xs w-5 sm:w-6 text-right flex-shrink-0" style={{ color: "var(--text-tertiary)" }}>{globalIndex + 1}</span>
+                            {v.thumbnail && (
+                              <img src={v.thumbnail} alt="" className="w-12 h-8 sm:w-16 sm:h-10 object-cover rounded flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs sm:text-sm truncate" style={{ color: "var(--text-primary)" }}>{v.title || `Video ${v.id}`}</p>
+                              <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>{formatDuration(v.duration)}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-center gap-2 mb-4">
+                        <button
+                          onClick={() => setPlaylistPage((p) => Math.max(0, p - 1))}
+                          disabled={playlistPage === 0}
+                          className="px-2.5 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-30"
+                          style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
+                        >
+                          &laquo;
+                        </button>
+                        <span className="text-xs sm:text-sm" style={{ color: "var(--text-secondary)" }}>
+                          {t(lang, "page")} {playlistPage + 1} {t(lang, "of")} {totalPages}
+                        </span>
+                        <button
+                          onClick={() => setPlaylistPage((p) => Math.min(totalPages - 1, p + 1))}
+                          disabled={playlistPage === totalPages - 1}
+                          className="px-2.5 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-30"
+                          style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
+                        >
+                          &raquo;
+                        </button>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
 
               <FormatQualitySelector
                 lang={lang} format={format} setFormat={setFormat}

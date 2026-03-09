@@ -298,4 +298,14 @@ router.get("/history", async (req, res) => {
   }
 });
 
+// Clear conversion history for this client
+router.delete("/history", async (req, res) => {
+  try {
+    await query("DELETE FROM conversions WHERE client_ip = $1", [req.ip]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: safeError(err) });
+  }
+});
+
 module.exports = router;
