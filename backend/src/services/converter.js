@@ -7,10 +7,8 @@ const COOKIES_MASTER = "/app/downloads/cookies.txt";
 const COOKIES_COPY = "/app/downloads/.cookies_work.txt";
 const OAUTH_CACHE_DIR = "/app/downloads/.oauth_cache";
 
-// iOS player client + bgutil PO token server (port 4416) for bot-detection bypass
-const BASE_ARGS = [
-  "--extractor-args", "youtube:player_client=ios,getpot_bgutil_baseurl=http://localhost:4416",
-];
+// iOS player client — less bot-detection, no auth required for most videos
+const BASE_ARGS = ["--extractor-args", "youtube:player_client=ios"];
 
 function getAuthArgs() {
   // Prefer OAuth2 (auto-refreshing tokens) over cookies

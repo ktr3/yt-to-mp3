@@ -4,11 +4,8 @@ FROM node:20-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ffmpeg python3 python3-pip curl unzip wget ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
-    && pip3 install --no-cache-dir --break-system-packages yt-dlp yt-dlp-get-pot \
+    && pip3 install --no-cache-dir --break-system-packages yt-dlp yt-dlp-youtube-oauth2 \
     && curl -fsSL https://deno.land/install.sh | DENO_INSTALL=/usr/local sh
-
-# Install bgutil PO-token provider (generates fresh PO tokens for each request)
-RUN npm install -g bgutil-ytdlp-pot-provider
 
 # Create downloads directory
 RUN mkdir -p /app/downloads
